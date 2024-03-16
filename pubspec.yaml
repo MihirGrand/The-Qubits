@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   http:
   provider:
+  noise_meter: ^5.0.2
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:
