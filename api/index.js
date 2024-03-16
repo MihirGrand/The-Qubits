@@ -198,6 +198,36 @@ app.post("/api/addRoom", async (req, res) => {
   }
 });
 
+app.post("/api/addDevicesToRoom", async (req, res) => {
+  try {
+    const { houseId, roomName, devices } = req.body;
+
+    if (!houseId || !roomName || !devices || devices.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "houseId, roomName, and devices are required" });
+    }
+
+    const house = await House.findById(houseId);
+    if (!house) {
+      return res.status(404).json({ message: "House not found" });
+    }
+
+    const room = house.rooms.find((room) => room.name === roomName);
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+    room.devices.push(...devices);
+    await house.save();
+
+    res
+      .status(200)
+      .json({ message: "Devices added to the room successfully", house });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.get("/api/getUser/:userId", async (req, res) => {
   const userId = req.params.userId;
   try {

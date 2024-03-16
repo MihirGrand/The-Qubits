@@ -10,15 +10,13 @@ const houseSchema = mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   rooms: [
     {
-      room: [
+      _id: false,
+      name: { type: String },
+      devices: [
         {
-          name: { type: String },
-          device: [
-            {
-              name: { type: String },
-              type: { type: Number },
-            },
-          ],
+          _id: false,
+          name: { type: String, unique: true },
+          type: { type: Number },
         },
       ],
     },
