@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import User from "./models/userSchema.js";
 import House from "./models/houseSchema.js";
-import io from "socket.io-client";
-import Peer from "simple-peer";
+import http from "http"; // Import http module
+import { Server as socketIO } from "socket.io"; // Import socketIO from socket.io
 
 const app = express();
 app.use(express.json());
@@ -25,6 +25,12 @@ mongoose
   .catch((err) => {
     console.log("Error: ", err);
   });
+
+// Create http server instance
+const server = http.createServer(app);
+
+// Create socketIO instance using the http server
+const io = new socketIO(server);
 
 app.post("/api/register", async (req, res) => {
   try {
@@ -241,36 +247,51 @@ app.get("/api/getUser/:userId", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.post("/setSecurity/:houseId", async (req, res) => {
+  const { houseId } = req.params;
+  const { securityLevel } = req.body;
+
+  try {
+    const house = await House.findById(houseId);
+    if (!house) {
+      return res.status(404).json({ message: "House not found" });
+    }
+
+    if (![0, 1, 2].includes(securityLevel)) {
+      return res.status(400).json({ message: "Invalid security level" });
+    }
+
+    house.security = securityLevel;
+    await house.save();
+
+    return res
+      .status(200)
+      .json({ message: "Security level updated successfully" });
+  } catch (error) {
+    console.error("Error setting security level:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 //sockets ==================================
 
-// const socket = io("http://localhost:3000");
+io.on("connection", (socket) => {
+  console.log("A client connected");
+  socket.on("sendSOS", async (houseId) => {
+    try {
+      const house = await House.findById(houseId);
+      if (!house) {
+        socket.emit("error", { message: "House not found" });
+        return;
+      }
+      socket.emit("sos", { house });
+    } catch (error) {
+      console.error("Error sending SOS request:", error);
+      socket.emit("error", { message: "Internal server error" });
+    }
+  });
+});
 
-// const peer = new Peer({ initiator: true, trickle: false });
-
-// navigator.mediaDevices
-//   .getUserMedia({ video: true, audio: false })
-//   .then((stream) => {
-//     socket.emit("stream", stream);
-
-//     socket.on("stream", (streamData) => {
-//       peer.signal(streamData);
-//     });
-
-//     peer.on("signal", (data) => {
-//       socket.emit("stream", data);
-//     });
-
-//     peer.on("stream", (remoteStream) => {
-//       const video = document.createElement("video");
-//       document.body.appendChild(video);
-//       video.srcObject = remoteStream;
-//       video.play();
-//     });
-//   })
-//   .catch((error) => {
-//     console.error("Error accessing media devices:", error);
-//   });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

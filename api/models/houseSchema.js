@@ -7,6 +7,10 @@ const houseSchema = mongoose.Schema({
     required: true,
     unique: true,
   },
+  security: {
+    type: Number,
+    required: true,
+  },
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   rooms: [
     {
