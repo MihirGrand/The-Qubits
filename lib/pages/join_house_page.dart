@@ -1,30 +1,16 @@
-import 'dart:convert';
-import 'dart:developer';
-
-import 'package:dedsec/classes/user.dart';
-import 'package:dedsec/classes/userHouse.dart';
 import 'package:dedsec/constants.dart';
 import 'package:dedsec/providers/login_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class JoinHousePage extends StatefulWidget {
+  const JoinHousePage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<JoinHousePage> createState() => _JoinHousePageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
-  var client = http.Client();
+class _JoinHousePageState extends State<JoinHousePage> {
   @override
   Widget build(BuildContext context) {
     final loginprov = context.read<LoginProvider>();
@@ -53,40 +39,8 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 80),
               Column(
                 children: [
-                  TextField(
-                    controller: email,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: "Email",
-                      hintStyle: TextStyle(color: Colors.grey[600]),
-                      filled: true,
-                      fillColor: bgS,
-                      border: UnderlineInputBorder(
-                        borderSide: BorderSide(color: bgS),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                    ),
-                  ),
+                  Text("You have not joined any homes"),
                   const SizedBox(height: 30),
-                  TextField(
-                    controller: password,
-                    style: const TextStyle(color: Colors.white),
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: "Password",
-                      hintStyle: TextStyle(color: Colors.grey[600]),
-                      filled: true,
-                      fillColor: bgS,
-                      border: UnderlineInputBorder(
-                        borderSide: BorderSide(color: bgS),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 30),
                   Row(
                     children: [
@@ -97,10 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: theme),
                           child: TextButton(
                             onPressed: () async {
-                              await Permission.audio.request();
-                              await Permission.microphone.request();
-                              await Permission.storage.request();
-                              final headers = {
+                              /*final headers = {
                                 'Content-Type': 'application/json'
                               };
                               //Navigator.pushNamed(context, '/home');
@@ -139,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                                     jsonDecode(utf8.decode(response.bodyBytes))
                                         as Map;
                                 SmartDialog.showToast(dec['message']);
-                              }
+                              }*/
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),

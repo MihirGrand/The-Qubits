@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class HomeProvider extends ChangeNotifier {
+class AudioProvider extends ChangeNotifier {
   double progress1 = 0.0;
   double progress2 = 0.0;
   double progress3 = 0.0;

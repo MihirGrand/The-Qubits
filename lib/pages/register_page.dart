@@ -5,23 +5,21 @@ import 'package:dedsec/classes/user.dart';
 import 'package:dedsec/classes/userHouse.dart';
 import 'package:dedsec/constants.dart';
 import 'package:dedsec/providers/login_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
+  TextEditingController name = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   var client = http.Client();
@@ -37,13 +35,13 @@ class _LoginPageState extends State<LoginPage> {
       body: Container(
         color: bg,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 30),
+          padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 80),
               const Text(
-                "Login",
+                "Register",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 40,
@@ -54,6 +52,23 @@ class _LoginPageState extends State<LoginPage> {
               Column(
                 children: [
                   TextField(
+                    controller: name,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: "Name",
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      filled: true,
+                      fillColor: bgS,
+                      border: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: bgS),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  TextField(
                     controller: email,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
@@ -61,10 +76,10 @@ class _LoginPageState extends State<LoginPage> {
                       hintStyle: TextStyle(color: Colors.grey[600]),
                       filled: true,
                       fillColor: bgS,
-                      border: UnderlineInputBorder(
+                      border: const UnderlineInputBorder(
                         borderSide: BorderSide(color: bgS),
                       ),
-                      focusedBorder: UnderlineInputBorder(
+                      focusedBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.white),
                       ),
                     ),
@@ -79,10 +94,10 @@ class _LoginPageState extends State<LoginPage> {
                       hintStyle: TextStyle(color: Colors.grey[600]),
                       filled: true,
                       fillColor: bgS,
-                      border: UnderlineInputBorder(
+                      border: const UnderlineInputBorder(
                         borderSide: BorderSide(color: bgS),
                       ),
-                      focusedBorder: UnderlineInputBorder(
+                      focusedBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.white),
                       ),
                     ),
@@ -97,42 +112,22 @@ class _LoginPageState extends State<LoginPage> {
                               color: theme),
                           child: TextButton(
                             onPressed: () async {
-                              await Permission.audio.request();
-                              await Permission.microphone.request();
-                              await Permission.storage.request();
                               final headers = {
                                 'Content-Type': 'application/json'
                               };
-                              //Navigator.pushNamed(context, '/home');
                               var response = await client.post(
-                                Uri.parse('$uri/api/login'),
+                                Uri.parse('$uri/api/register'),
                                 body: jsonEncode({
+                                  'name': name.text,
                                   'email': email.text,
                                   'password': password.text,
                                 }),
                                 headers: headers,
                               );
                               if (response.statusCode == 200) {
-                                var decodedResponse =
-                                    jsonDecode(utf8.decode(response.bodyBytes))
-                                        as Map;
-                                User user =
-                                    User.fromJson(decodedResponse['user']);
-                                Navigator.pushNamed(context, '/home');
-                                loginprov.setUser(user);
-                                var homes = await client.get(
-                                  Uri.parse('$uri/api/getHouse/${user.id}'),
-                                );
-                                var res =
-                                    jsonDecode(utf8.decode(homes.bodyBytes))
-                                        as Map;
-                                print(res);
-                                List<dynamic> decoded = res["userHouses"];
-                                List<UserHouse> homeys = List<UserHouse>.from(
-                                    decoded.map<UserHouse>(
-                                        (i) => UserHouse.fromJson(i)));
-                                loginprov.setHomes(homeys);
-                                inspect(loginprov.homes?.length);
+                                Navigator.pushNamed(context, '/login');
+                                SmartDialog.showToast(
+                                    "Successfully registered! Please login to continue.");
                               } else {
                                 inspect(response);
                                 var dec =
@@ -144,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: Text(
-                                "LOGIN",
+                                "Register",
                                 style: TextStyle(
                                     color: Colors.grey[900],
                                     fontSize: 20,
@@ -161,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Don't have an account?",
+                        "Already have an account?",
                         style: TextStyle(
                           color: Colors.white,
                         ),
@@ -169,10 +164,10 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(width: 10),
                       GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(context, '/register');
+                          Navigator.pushNamed(context, '/login');
                         },
                         child: const Text(
-                          "Register",
+                          "Login",
                           style: TextStyle(
                             color: theme,
                           ),

@@ -1,21 +1,20 @@
+import 'package:dedsec/classes/room.dart';
 import 'package:dedsec/classes/user.dart';
 
 class UserHouse {
   String? id;
   String? name;
-  List<User>? users;
+  List<String>? users;
+  List<Room>? rooms;
 
-  UserHouse({
-    this.id,
-    this.name,
-    this.users,
-  });
+  UserHouse({this.id, this.name, this.users, this.rooms});
 
   factory UserHouse.fromJson(Map<String, dynamic> json) {
     return UserHouse(
       id: json['id'],
       name: json['name'],
-      users: json['users'],
+      users: json['users'].map<String>((data) => data.toString()).toList(),
+      rooms: json['rooms'].map<Room>((e) => e = Room.fromJson(e)).toList(),
     );
   }
 
