@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import User from "./models/userSchema.js";
 import House from "./models/houseSchema.js";
+import io from "socket.io-client";
+import Peer from "simple-peer";
 
 const app = express();
 app.use(express.json());
@@ -72,8 +74,10 @@ app.post("/api/login", async (req, res) => {
     if (user.password !== password) {
       return res.status(401).json({ message: "Invalid password" });
     }
-
-    res.status(200).json({ message: "Login successful", user });
+    const userData = res.status(200).json({
+      message: "Login successful",
+      user: { _id: user._id, name: user.name, email: user.email },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -143,6 +147,100 @@ app.post("/api/joinHouse", async (req, res) => {
   }
 });
 
+app.get("/api/getHouse/:userid", async (req, res) => {
+  const userId = req.params.userid; // Retrieve userId from route parameters
+  try {
+    const userHouses = await House.find({ users: userId });
+    if (!userHouses || userHouses.length === 0) {
+      return res.status(404).json({ message: "User has no houses" });
+    }
+    res
+      .status(200)
+      .json({ message: "User houses fetched successfully", userHouses });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ error: "An error occurred while querying the database" });
+  }
+});
+
+app.post("/api/addRoom", async (req, res) => {
+  try {
+    const { houseId, roomName, devices } = req.body;
+
+    if (!houseId || !roomName || !devices || devices.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "houseId, roomName, and devices are required" });
+    }
+
+    const house = await House.findById(houseId);
+    if (!house) {
+      return res.status(404).json({ message: "House not found" });
+    }
+
+    const room = {
+      name: roomName,
+      devices: devices.map((device) => ({
+        name: device.name,
+        type: device.type,
+      })),
+    };
+
+    house.rooms.push(room);
+
+    await house.save();
+
+    res.status(201).json({ message: "Room added successfully", house });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get("/api/getUser/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User found", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+//sockets ==================================
+
+// const socket = io("http://localhost:3000");
+
+// const peer = new Peer({ initiator: true, trickle: false });
+
+// navigator.mediaDevices
+//   .getUserMedia({ video: true, audio: false })
+//   .then((stream) => {
+//     socket.emit("stream", stream);
+
+//     socket.on("stream", (streamData) => {
+//       peer.signal(streamData);
+//     });
+
+//     peer.on("signal", (data) => {
+//       socket.emit("stream", data);
+//     });
+
+//     peer.on("stream", (remoteStream) => {
+//       const video = document.createElement("video");
+//       document.body.appendChild(video);
+//       video.srcObject = remoteStream;
+//       video.play();
+//     });
+//   })
+//   .catch((error) => {
+//     console.error("Error accessing media devices:", error);
+//   });

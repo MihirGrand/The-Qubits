@@ -8,6 +8,21 @@ const houseSchema = mongoose.Schema({
     unique: true,
   },
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  rooms: [
+    {
+      room: [
+        {
+          name: { type: String },
+          device: [
+            {
+              name: { type: String },
+              type: { type: Number },
+            },
+          ],
+        },
+      ],
+    },
+  ],
 });
 
 export default mongoose.model("House", houseSchema);
